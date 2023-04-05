@@ -144,14 +144,16 @@ if not name_to_embedder:
 
 # ESM
 try:
-    from bio_embeddings.embed.esm_embedder import ESMEmbedder, ESM1bEmbedder, ESM1vEmbedder
+    from bio_embeddings.embed.esm_embedder import ESMEmbedder, ESM1bEmbedder, ESM1vEmbedder, ESM2Embedder
 
     name_to_embedder[ESMEmbedder.name] = ESMEmbedder
     name_to_embedder[ESM1bEmbedder.name] = ESM1bEmbedder
     name_to_embedder[ESM1vEmbedder.name] = ESM1vEmbedder
+    name_to_embedder[ESM2Embedder.name] = ESM2Embedder
     __all__.append(ESMEmbedder.__name__)
     __all__.append(ESM1bEmbedder.__name__)
     __all__.append(ESM1vEmbedder.__name__)
+    __all__.append(ESM2Embedder.__name__)
 except ImportError:
     logger.debug("esm extra is not installed, ESM1, ESM1b and ESM1v will not be available")
 
