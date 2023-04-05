@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Generator, Union, Iterable, Optional, Any, Tuple
+from typing import List, Generator, Union, Iterable, Optional, Any, Tuple, Literal
 from itertools import tee
 
 import torch
@@ -136,3 +136,38 @@ class ESM1vEmbedder(ESMEmbedderBase):
             )
 
         super().__init__(device, **kwargs)
+
+class ESM2Embedder(ESMEmbedderBase):
+    """ESM-2 Embedder(s)
+    
+    ESM-2 exists in six models called `esm2_txx_yyy_UR50D where xx denotes the number of layers (from 6 to 48)
+    and yyy the number of parameters of the model (from 8M to 15B) that can be selected with the number of the 
+    model (1-6)
+    
+    Lin, Zeming, et al. "Evolutionary-scale prediction of atomic-level protein structure with a language model." 
+    Science 379.6637 (2023): 1123-1130."""
+
+    names = ["esm2_t6_8M_UR50D",
+             "esm2_t12_35M_UR50D",
+             "esm2_t30_150M_UR50D",
+             "esm2_t33_650M_UR50D",
+             "esm2_t36_3B_UR50D",
+             "esm2_t48_15B_UR50D"]
+
+    layers = [6, 12, 30, 33, 36, 48]
+    embedding_dimensions = [320, 480, 640, 1280, 2560, 5120]
+
+    def __init__(self, model_id: Literal[tuple(range(1, 7))], 
+                 device: Union[None, str, torch.device] = None, **kwargs):
+        super(EmbedderInterface).__init__(device, **kwargs)         
+        if model_id not in range(1, 6):
+            raise ValueError("The model id must be in 1-6")
+        
+        self.name = self.names[model_id]
+        self._picked_layer = self.layers[model_id]
+        self.embedding_dimension = self.embedding_dimensions[model_id]
+        model, alphabet = torch.hub.load("facebookresearch/esm:main", self.name)
+
+        self._model = model.to(self.device)
+        self._batch_converter = alphabet.get_batch_converter()       
+
